@@ -1,4 +1,6 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, stripSearchParams, useNavigate } from "@tanstack/react-router";
+import { fallback, zodValidator } from "@tanstack/zod-adapter";
+import { z } from "zod";
 import { useEffect, useRef, useState } from "react";
 import { RotateCcw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,7 +19,13 @@ const title = "Pitchcraft | AI Website Proposal Generator";
 const description =
   "Pitchcraft turns a client intake into a 25-section website proposal — strategy, UX, branding, SEO, stack, roadmap and costs — with a strict zero-fabrication policy.";
 
+const searchSchema = z.object({
+  step: fallback(z.number().int(), 1).default(1),
+});
+
 export const Route = createFileRoute("/")({
+  validateSearch: zodValidator(searchSchema),
+  search: { middlewares: [stripSearchParams({ step: 1 })] },
   head: () => ({
     meta: [
       { title },
@@ -31,6 +39,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const navigate = useNavigate();
+  const { step } = Route.useSearch();
   const [history, setHistory] = useState<SavedProposal[]>([]);
   const [prefill, setPrefill] = useState<ProposalInput | undefined>(undefined);
   const formRef = useRef<HTMLDivElement>(null);
@@ -106,7 +115,15 @@ function Index() {
         className="mx-auto grid max-w-[92rem] gap-10 px-6 py-14 lg:grid-cols-[minmax(0,1fr)_22rem] lg:px-10 xl:px-16"
       >
         <div className="min-w-0">
-          <IntakeForm loading={false} onSubmit={generate} initialValues={prefill} />
+          <IntakeForm
+            loading={false}
+            onSubmit={generate}
+            initialValues={prefill}
+            step={step}
+            onStepChange={(next) =>
+              void navigate({ to: "/", search: { step: next }, replace: true, resetScroll: false })
+            }
+          />
         </div>
 
         <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">

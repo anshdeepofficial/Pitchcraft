@@ -38,6 +38,21 @@ const STEPS = [
 const BUDGETS = ["Under 1k", "1k – 3k", "3k – 7k", "7k – 15k", "15k – 30k", "30k+", "Not sure yet"];
 const COLOR_MODES = ["I have brand colours", "Suggest colours for me", "Match my existing website"];
 
+const DRAFT_KEY = "pitchcraft-intake-draft";
+
+function loadDraft(): { step: number; values: ProposalInput } | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { step?: number; values?: ProposalInput };
+    if (!parsed?.values) return null;
+    return { step: Math.min(Math.max(parsed.step ?? 0, 0), STEPS.length - 1), values: { ...emptyProposalInput, ...parsed.values } };
+  } catch {
+    return null;
+  }
+}
+
 export function IntakeForm({
   loading,
   onSubmit,
@@ -48,10 +63,36 @@ export function IntakeForm({
   initialValues?: ProposalInput | undefined;
 }) {
   const [values, setValues] = useState<ProposalInput>(initialValues ?? emptyProposalInput);
+  const [step, setStep] = useState(0);
+  const [restored, setRestored] = useState(false);
+
+  // Resume exactly where the user left off (unless a saved proposal was pre-filled).
+  useEffect(() => {
+    if (initialValues) {
+      setRestored(true);
+      return;
+    }
+    const draft = loadDraft();
+    if (draft) {
+      setValues(draft.values);
+      setStep(draft.step);
+    }
+    setRestored(true);
+  }, []);
+
   useEffect(() => {
     if (initialValues) setValues(initialValues);
   }, [initialValues]);
-  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    if (!restored || typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(DRAFT_KEY, JSON.stringify({ step, values }));
+    } catch {
+      /* storage full or unavailable — drafting is best-effort */
+    }
+  }, [step, values, restored]);
+
   const [detecting, setDetecting] = useState(false);
   const [detectMsg, setDetectMsg] = useState<string | null>(null);
   const [writing, setWriting] = useState(false);

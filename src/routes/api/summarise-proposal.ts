@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { aiApiKey, aiHeaders, aiModel, aiResponsesUrl } from "@/lib/ai-endpoint";
+import { AI_NOT_CONFIGURED_MESSAGE, aiApiKey, aiHeaders, aiModel, aiResponsesUrl } from "@/lib/ai-endpoint";
 
 const Body = z.object({
   markdown: z.string().min(50),
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/api/summarise-proposal")({
     handlers: {
       POST: async ({ request }) => {
         const apiKey = aiApiKey();
-        if (!apiKey) return new Response("AI is not configured.", { status: 500 });
+        if (!apiKey) return new Response(AI_NOT_CONFIGURED_MESSAGE, { status: 503 });
 
         let data: z.infer<typeof Body>;
         try {

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ProposalInputSchema, type ProposalInput } from "@/lib/proposal-schema";
-import { aiApiKey, aiHeaders, aiModel, aiResponsesUrl } from "@/lib/ai-endpoint";
+import { AI_NOT_CONFIGURED_MESSAGE, aiApiKey, aiHeaders, aiModel, aiResponsesUrl } from "@/lib/ai-endpoint";
 
 const SYSTEM = `You are a senior digital agency consultant, UX strategist, UI designer, SEO specialist, software architect, copywriter, branding expert and business analyst with 20+ years of experience preparing website proposals for paying clients.
 
@@ -109,7 +109,7 @@ export const Route = createFileRoute("/api/generate-proposal")({
     handlers: {
       POST: async ({ request }) => {
         const apiKey = aiApiKey();
-        if (!apiKey) return new Response("AI is not configured.", { status: 500 });
+        if (!apiKey) return new Response(AI_NOT_CONFIGURED_MESSAGE, { status: 503 });
 
         let data: ProposalInput;
         try {

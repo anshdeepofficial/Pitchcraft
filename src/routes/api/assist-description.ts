@@ -1,6 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { AI_NOT_CONFIGURED_MESSAGE, aiApiKey, aiHeaders, aiModel, aiResponsesUrl } from "@/lib/ai-endpoint";
+import {
+  AI_NOT_CONFIGURED_MESSAGE,
+  aiApiKey,
+  aiHeaders,
+  aiRequestBody,
+  aiResponseText,
+  aiResponsesUrl,
+} from "@/lib/ai-endpoint";
 
 const Body = z.object({
   businessName: z.string().default(""),
@@ -44,11 +51,7 @@ export const Route = createFileRoute("/api/assist-description")({
         const res = await fetch(aiResponsesUrl(), {
           method: "POST",
           headers: aiHeaders(apiKey),
-          body: JSON.stringify({
-            model: aiModel(),
-            input: prompt,
-            reasoning: { effort: "low" },
-          }),
+          body: JSON.stringify(aiRequestBody({ input: prompt })),
         });
 
         if (!res.ok) {
@@ -64,18 +67,7 @@ export const Route = createFileRoute("/api/assist-description")({
           );
         }
 
-        const json = (await res.json()) as {
-          output_text?: string;
-          output?: { content?: { type?: string; text?: string }[] }[];
-        };
-        const text =
-          json.output_text ??
-          json.output
-            ?.flatMap((o) => o.content ?? [])
-            .filter((c) => c.type === "output_text")
-            .map((c) => c.text ?? "")
-            .join("") ??
-          "";
+        const text = aiResponseText(await res.json());
 
         return Response.json({ text: text.trim() });
       },

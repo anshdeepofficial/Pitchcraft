@@ -1,6 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ProposalInputSchema, type ProposalInput } from "@/lib/proposal-schema";
-import { AI_NOT_CONFIGURED_MESSAGE, aiApiKey, aiHeaders, aiModel, aiResponsesUrl } from "@/lib/ai-endpoint";
+import {
+  AI_NOT_CONFIGURED_MESSAGE,
+  aiApiKey,
+  aiHeaders,
+  aiRequestBody,
+  aiResponsesUrl,
+  aiStreamDelta,
+} from "@/lib/ai-endpoint";
 
 const SYSTEM = `You are a senior digital agency consultant, UX strategist, UI designer, SEO specialist, software architect, copywriter, branding expert and business analyst with 20+ years of experience preparing website proposals for paying clients.
 
@@ -123,14 +130,14 @@ export const Route = createFileRoute("/api/generate-proposal")({
         const upstream = await fetch(aiResponsesUrl(), {
           method: "POST",
           headers: aiHeaders(apiKey),
-          body: JSON.stringify({
-            model: aiModel(),
-            stream: true,
-            service_tier: "priority",
-            instructions: SYSTEM,
-            input: buildUserPrompt(data, crawled),
-            reasoning: { effort: "low" },
-          }),
+          body: JSON.stringify(
+            aiRequestBody({
+              instructions: SYSTEM,
+              input: buildUserPrompt(data, crawled),
+              stream: true,
+              priority: true,
+            }),
+          ),
         });
 
         if (!upstream.ok || !upstream.body) {
@@ -165,10 +172,8 @@ export const Route = createFileRoute("/api/generate-proposal")({
                   const payload = trimmed.slice(5).trim();
                   if (!payload || payload === "[DONE]") continue;
                   try {
-                    const evt = JSON.parse(payload);
-                    if (evt.type === "response.output_text.delta" && evt.delta) {
-                      controller.enqueue(encoder.encode(evt.delta));
-                    }
+                    const delta = aiStreamDelta(JSON.parse(payload));
+                    if (delta) controller.enqueue(encoder.encode(delta));
                   } catch {
                     /* ignore partial frames */
                   }

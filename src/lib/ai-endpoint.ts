@@ -10,8 +10,17 @@ function baseUrl(): string {
 }
 
 export function aiApiKey(): string | undefined {
-  return process.env["AI_API_KEY"] || process.env["LOVABLE_API_KEY"];
+  return (
+    process.env["AI_API_KEY"] ||
+    process.env["LOVABLE_API_KEY"] ||
+    process.env["OPENAI_API_KEY"] ||
+    undefined
+  );
 }
+
+// Shown to the user when no key is present in the deployment environment.
+export const AI_NOT_CONFIGURED_MESSAGE =
+  "AI is not configured on this deployment. Add an AI_API_KEY environment variable (plus optional AI_API_BASE_URL and AI_MODEL) in your hosting project settings, then redeploy.";
 
 export function aiModel(): string {
   return process.env["AI_MODEL"] || DEFAULT_MODEL;

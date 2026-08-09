@@ -52,7 +52,6 @@ export function IntakeForm({
     if (initialValues) setValues(initialValues);
   }, [initialValues]);
   const [step, setStep] = useState(0);
-  const [maxStep, setMaxStep] = useState(0);
   const [detecting, setDetecting] = useState(false);
   const [detectMsg, setDetectMsg] = useState<string | null>(null);
   const [writing, setWriting] = useState(false);
@@ -158,12 +157,7 @@ export function IntakeForm({
       onSubmit={(e) => {
         e.preventDefault();
         if (isLast) submit();
-        else if (canContinue)
-          setStep((s) => {
-            const next = s + 1;
-            setMaxStep((m) => Math.max(m, next));
-            return next;
-          });
+        else setStep((s) => Math.min(s + 1, STEPS.length - 1));
       }}
       className="space-y-8"
     >
@@ -173,16 +167,12 @@ export function IntakeForm({
           <li key={s.title}>
             <button
               type="button"
-              onClick={() => i <= maxStep && setStep(i)}
-              disabled={i > maxStep}
+              onClick={() => setStep(i)}
               className={cn(
                 "rounded-full border px-3 py-1.5 text-xs transition-colors",
-                i > maxStep && "cursor-not-allowed opacity-60",
                 i === step
                   ? "border-primary bg-primary text-primary-foreground"
-                  : i <= maxStep
-                    ? "border-border bg-card text-foreground"
-                    : "border-border text-muted-foreground",
+                  : "border-border bg-card text-foreground hover:border-primary/50",
               )}
             >
               {i + 1}. {s.title}
@@ -490,7 +480,7 @@ export function IntakeForm({
 
         {!isLast ? (
           <>
-            <Button type="submit" size="lg" disabled={!canContinue}>
+            <Button type="submit" size="lg">
               Continue <ArrowRight className="h-4 w-4" />
             </Button>
             <Button type="button" variant="ghost" onClick={submit} disabled={!canContinue || loading}>

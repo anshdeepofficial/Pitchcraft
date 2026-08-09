@@ -57,14 +57,28 @@ export function IntakeForm({
   loading,
   onSubmit,
   initialValues,
+  step: stepParam,
+  onStepChange,
 }: {
   loading: boolean;
   onSubmit: (data: ProposalInput) => void;
   initialValues?: ProposalInput | undefined;
+  /** 1-based step, usually driven by the ?step= URL param. */
+  step?: number | undefined;
+  onStepChange?: ((step: number) => void) | undefined;
 }) {
   const [values, setValues] = useState<ProposalInput>(initialValues ?? emptyProposalInput);
-  const [step, setStep] = useState(0);
+  const [localStep, setLocalStep] = useState(0);
   const [restored, setRestored] = useState(false);
+
+  const clamp = (i: number) => Math.min(Math.max(i, 0), STEPS.length - 1);
+  const step = clamp(stepParam !== undefined ? stepParam - 1 : localStep);
+
+  const goToStep = (next: number) => {
+    const target = clamp(next);
+    setLocalStep(target);
+    onStepChange?.(target + 1);
+  };
 
   // Resume exactly where the user left off (unless a saved proposal was pre-filled).
   useEffect(() => {
@@ -75,7 +89,8 @@ export function IntakeForm({
     const draft = loadDraft();
     if (draft) {
       setValues(draft.values);
-      setStep(draft.step);
+      // The URL wins when it points at a specific step; otherwise resume the draft.
+      if (stepParam === undefined || stepParam <= 1) goToStep(draft.step);
     }
     setRestored(true);
   }, []);
@@ -198,7 +213,7 @@ export function IntakeForm({
       onSubmit={(e) => {
         e.preventDefault();
         if (isLast) submit();
-        else setStep((s) => Math.min(s + 1, STEPS.length - 1));
+        else goToStep(step + 1);
       }}
       className="space-y-8"
     >
@@ -208,7 +223,7 @@ export function IntakeForm({
           <li key={s.title}>
             <button
               type="button"
-              onClick={() => setStep(i)}
+              onClick={() => goToStep(i)}
               className={cn(
                 "rounded-full border px-3 py-1.5 text-xs transition-colors",
                 i === step
@@ -514,7 +529,7 @@ export function IntakeForm({
 
       <div className="flex flex-wrap items-center gap-3">
         {step > 0 && (
-          <Button type="button" variant="outline" onClick={() => setStep((s) => s - 1)} disabled={loading}>
+          <Button type="button" variant="outline" onClick={() => goToStep(step - 1)} disabled={loading}>
             <ArrowLeft className="h-4 w-4" /> Back
           </Button>
         )}

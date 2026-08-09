@@ -22,7 +22,7 @@ It turns a simple guided input form into a detailed proposal document you can sh
 
 ## Website URL
 
-- Local app URL (default): http://localhost:8080
+- Local app URL (default): pitchcraftpro.vercel.app
 - Configurable public URL: set `VITE_APP_URL` in your environment
 
 ---

@@ -1,6 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { AI_NOT_CONFIGURED_MESSAGE, aiApiKey, aiHeaders, aiModel, aiResponsesUrl } from "@/lib/ai-endpoint";
+import {
+  AI_NOT_CONFIGURED_MESSAGE,
+  aiApiKey,
+  aiHeaders,
+  aiRequestBody,
+  aiResponsesUrl,
+  aiStreamDelta,
+} from "@/lib/ai-endpoint";
 
 const Body = z.object({
   heading: z.string().min(1),
@@ -53,14 +60,9 @@ export const Route = createFileRoute("/api/regenerate-section")({
         const upstream = await fetch(aiResponsesUrl(), {
           method: "POST",
           headers: aiHeaders(apiKey),
-          body: JSON.stringify({
-            model: aiModel(),
-            stream: true,
-            service_tier: "priority",
-            instructions: SYSTEM,
-            input,
-            reasoning: { effort: "low" },
-          }),
+          body: JSON.stringify(
+            aiRequestBody({ instructions: SYSTEM, input, stream: true, priority: true }),
+          ),
         });
 
         if (!upstream.ok || !upstream.body) {
@@ -96,10 +98,8 @@ export const Route = createFileRoute("/api/regenerate-section")({
                   const payload = trimmed.slice(5).trim();
                   if (!payload || payload === "[DONE]") continue;
                   try {
-                    const evt = JSON.parse(payload);
-                    if (evt.type === "response.output_text.delta" && evt.delta) {
-                      controller.enqueue(encoder.encode(evt.delta));
-                    }
+                    const delta = aiStreamDelta(JSON.parse(payload));
+                    if (delta) controller.enqueue(encoder.encode(delta));
                   } catch {
                     /* partial frame */
                   }

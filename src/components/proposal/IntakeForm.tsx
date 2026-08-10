@@ -116,7 +116,10 @@ export function IntakeForm({
   const set = <K extends keyof ProposalInput>(key: K, value: ProposalInput[K]) =>
     setValues((v) => ({ ...v, [key]: value }));
 
+  const code = (i: number) => `${step + 1}${String.fromCharCode(65 + i)}`;
+
   const profile = useMemo(() => profileFor(values.industries), [values.industries]);
+
   const symbol = useMemo(() => values.currency || "", [values.currency]);
 
   const detect = async () => {
@@ -243,7 +246,7 @@ export function IntakeForm({
         {step === 0 && (
           <div className="space-y-6">
             <div className="grid gap-6 sm:grid-cols-2">
-              <Field label={LABELS.businessName!} required htmlFor="businessName">
+              <Field label={LABELS.businessName!} number={code(0)} required htmlFor="businessName">
                 <Input
                   id="businessName"
                   required
@@ -255,6 +258,7 @@ export function IntakeForm({
 
               <Field
                 label={LABELS.websiteUrl!}
+                number={code(1)}
                 hint="Have one already? We'll read it and fill in what we can verify."
                 htmlFor="websiteUrl"
                 action={
@@ -279,6 +283,7 @@ export function IntakeForm({
 
             <Field
               label={LABELS.industries!}
+              number={code(2)}
               hint="Pick one or more. Everything after this adapts to your choice."
             >
               <SearchMultiSelect
@@ -291,7 +296,8 @@ export function IntakeForm({
               />
             </Field>
 
-            <Field label={LABELS.country!} hint="Sets your currency, timezone and date format automatically.">
+            <Field label={LABELS.country!} number={code(3)} hint="Sets your currency, timezone and date format automatically.">
+
               <CountrySelect
                 value={values.country}
                 onSelect={(c) =>
@@ -314,28 +320,29 @@ export function IntakeForm({
             </Field>
 
             <div className="grid gap-6 sm:grid-cols-2">
-              <Field label={LABELS.city!} htmlFor="city">
+              <Field label={LABELS.city!} number={code(4)} htmlFor="city">
                 <Input id="city" value={values.city} onChange={(e) => set("city", e.target.value)} />
               </Field>
-              <Field label={LABELS.state!} htmlFor="state">
+              <Field label={LABELS.state!} number={code(5)} htmlFor="state">
                 <Input id="state" value={values.state} onChange={(e) => set("state", e.target.value)} />
               </Field>
-              <Field label={LABELS.address!} htmlFor="address" className="sm:col-span-2">
+              <Field label={LABELS.address!} number={code(6)} htmlFor="address" className="sm:col-span-2">
                 <Input id="address" value={values.address} onChange={(e) => set("address", e.target.value)} />
               </Field>
-              <Field label={LABELS.postalCode!} htmlFor="postalCode">
+              <Field label={LABELS.postalCode!} number={code(7)} htmlFor="postalCode">
                 <Input id="postalCode" value={values.postalCode} onChange={(e) => set("postalCode", e.target.value)} />
               </Field>
-              <Field label={LABELS.mapsUrl!} htmlFor="mapsUrl">
+              <Field label={LABELS.mapsUrl!} number={code(8)} htmlFor="mapsUrl">
                 <Input id="mapsUrl" placeholder="Optional" value={values.mapsUrl} onChange={(e) => set("mapsUrl", e.target.value)} />
               </Field>
-              <Field label={LABELS.businessEmail!} htmlFor="businessEmail">
+              <Field label={LABELS.businessEmail!} number={code(9)} htmlFor="businessEmail">
                 <Input id="businessEmail" type="email" value={values.businessEmail} onChange={(e) => set("businessEmail", e.target.value)} />
               </Field>
-              <Field label={LABELS.businessPhone!} htmlFor="businessPhone">
+              <Field label={LABELS.businessPhone!} number={code(10)} htmlFor="businessPhone">
                 <Input id="businessPhone" inputMode="tel" value={values.businessPhone} onChange={(e) => set("businessPhone", e.target.value)} />
               </Field>
             </div>
+
           </div>
         )}
 
@@ -343,16 +350,17 @@ export function IntakeForm({
           <div className="space-y-8">
             <Field
               label={LABELS.services!}
+              number={code(0)}
               hint={values.industries.length ? "Suggestions based on your industry — tap to select." : "Pick your industry first for tailored suggestions."}
             >
               <ChipSelect options={profile.services} value={values.services} onChange={(v) => set("services", v)} />
             </Field>
 
-            <Field label={LABELS.products!} hint="Skip this if you only sell services.">
+            <Field label={LABELS.products!} number={code(1)} hint="Skip this if you only sell services.">
               <ChipSelect options={profile.products} value={values.products} onChange={(v) => set("products", v)} />
             </Field>
 
-            <Field label={LABELS.targetAudience!} hint="Who actually buys from you?">
+            <Field label={LABELS.targetAudience!} number={code(2)} hint="Who actually buys from you?">
               <ChipSelect
                 options={Array.from(new Set([...profile.audience, ...AUDIENCES])).slice(0, 30)}
                 value={values.targetAudience}
@@ -362,6 +370,7 @@ export function IntakeForm({
 
             <Field
               label={LABELS.description!}
+              number={code(3)}
               hint="A short paragraph in your own words. The AI can draft one from what you've selected — it will never invent facts."
               htmlFor="description"
               action={
@@ -381,55 +390,58 @@ export function IntakeForm({
               {assistError && <p className="mt-1.5 text-xs text-destructive">{assistError}</p>}
             </Field>
 
-            <Field label={LABELS.competitors!} hint="Only real websites you know of. We never invent competitors.">
+            <Field label={LABELS.competitors!} number={code(4)} hint="Only real websites you know of. We never invent competitors.">
               <UrlList value={values.competitors} onChange={(v) => set("competitors", v)} />
             </Field>
+
           </div>
         )}
 
         {step === 2 && (
           <div className="space-y-8">
-            <Field label={LABELS.goals!} hint="What should the website actually achieve?">
+            <Field label={LABELS.goals!} number={code(0)} hint="What should the website actually achieve?">
               <ChipSelect
                 options={Array.from(new Set([...profile.goals, ...BUSINESS_GOALS]))}
                 value={values.goals}
                 onChange={(v) => set("goals", v)}
               />
             </Field>
-            <Field label={LABELS.seoGoals!} hint="How people should find you on Google.">
+            <Field label={LABELS.seoGoals!} number={code(1)} hint="How people should find you on Google.">
               <ChipSelect options={SEO_GOALS} value={values.seoGoals} onChange={(v) => set("seoGoals", v)} />
             </Field>
-            <Field label={LABELS.marketingGoals!}>
+            <Field label={LABELS.marketingGoals!} number={code(2)}>
               <ChipSelect options={MARKETING_GOALS} value={values.marketingGoals} onChange={(v) => set("marketingGoals", v)} />
             </Field>
           </div>
         )}
 
+
         {step === 3 && (
           <div className="space-y-8">
-            <Field label={LABELS.style!} hint="Pick the look that feels right — you'll see a preview of each.">
+            <Field label={LABELS.style!} number={code(0)} hint="Pick the look that feels right — you'll see a preview of each.">
               <StyleCards value={values.style} onChange={(v) => set("style", v)} />
             </Field>
-            <Field label={LABELS.brandPersonality!} hint="How should the site feel to a visitor?">
+            <Field label={LABELS.brandPersonality!} number={code(1)} hint="How should the site feel to a visitor?">
               <ChipSelect options={BRAND_PERSONALITIES} value={values.brandPersonality} onChange={(v) => set("brandPersonality", v)} />
             </Field>
-            <Field label={LABELS.colorMode!}>
+            <Field label={LABELS.colorMode!} number={code(2)}>
               <ChipSelect single allowCustom={false} options={COLOR_MODES} value={values.colorMode ? [values.colorMode] : []} onChange={(v) => set("colorMode", v[0] ?? "")} />
             </Field>
             {values.colorMode !== "Suggest colours for me" && (
-              <Field label={LABELS.colors!} hint="Choose a ready-made palette or pick exact colours.">
+              <Field label={LABELS.colors!} number={code(3)} hint="Choose a ready-made palette or pick exact colours.">
                 <PalettePicker value={values.colors} onChange={(v) => set("colors", v)} />
               </Field>
             )}
-            <Field label={LABELS.fonts!} hint="Leave blank and we'll recommend a pairing." htmlFor="fonts">
+            <Field label={LABELS.fonts!} number={code(4)} hint="Leave blank and we'll recommend a pairing." htmlFor="fonts">
               <Input id="fonts" placeholder="e.g. Söhne, or open to suggestions" value={values.fonts} onChange={(e) => set("fonts", e.target.value)} />
             </Field>
           </div>
         )}
 
+
         {step === 4 && (
           <div className="space-y-8">
-            <Field label={LABELS.budget!} hint={symbol ? `Ranges shown in ${symbol}.` : "Pick a range — this shapes the recommended scope."}>
+            <Field label={LABELS.budget!} number={code(0)} hint={symbol ? `Ranges shown in ${symbol}.` : "Pick a range — this shapes the recommended scope."}>
               <ChipSelect
                 single
                 options={BUDGETS.map((b) => (symbol && b !== "Not sure yet" ? `${symbol} ${b}` : b))}
@@ -438,7 +450,7 @@ export function IntakeForm({
                 customPlaceholder="Or type an exact budget"
               />
             </Field>
-            <Field label={LABELS.deadline!}>
+            <Field label={LABELS.deadline!} number={code(1)}>
               <ChipSelect
                 single
                 options={DEADLINE_PRESETS}
@@ -447,7 +459,7 @@ export function IntakeForm({
                 customPlaceholder="Or a specific date"
               />
             </Field>
-            <Field label={LABELS.pages!} hint="Not sure? Leave it — we'll propose a sitemap.">
+            <Field label={LABELS.pages!} number={code(2)} hint="Not sure? Leave it — we'll propose a sitemap.">
               <ChipSelect
                 single
                 options={PAGE_COUNTS}
@@ -456,7 +468,7 @@ export function IntakeForm({
                 customPlaceholder="Exact number"
               />
             </Field>
-            <Field label={LABELS.languages!}>
+            <Field label={LABELS.languages!} number={code(3)}>
               <ChipSelect
                 options={Array.from(new Set(["English", ...values.languages]))}
                 value={values.languages}
@@ -464,7 +476,7 @@ export function IntakeForm({
                 customPlaceholder="Add a language"
               />
             </Field>
-            <Field label={LABELS.cms!} hint="In plain terms: how do you want to update the site later?">
+            <Field label={LABELS.cms!} number={code(4)} hint="In plain terms: how do you want to update the site later?">
               <div className="grid gap-2 sm:grid-cols-2">
                 {CMS_OPTIONS.map((o) => (
                   <button
@@ -482,10 +494,10 @@ export function IntakeForm({
                 ))}
               </div>
             </Field>
-            <Field label={LABELS.integrations!} hint="Things the site should connect to.">
+            <Field label={LABELS.integrations!} number={code(5)} hint="Things the site should connect to.">
               <ChipSelect options={profile.integrations} value={values.integrations} onChange={(v) => set("integrations", v)} />
             </Field>
-            <Field label={LABELS.specialRequirements!} htmlFor="specialRequirements">
+            <Field label={LABELS.specialRequirements!} number={code(6)} htmlFor="specialRequirements">
               <Textarea
                 id="specialRequirements"
                 rows={3}
@@ -497,21 +509,22 @@ export function IntakeForm({
           </div>
         )}
 
+
         {step === 5 && (
           <div className="grid gap-6 sm:grid-cols-2">
-            <Field label={LABELS.contactName!} htmlFor="contactName">
+            <Field label={LABELS.contactName!} number={code(0)} htmlFor="contactName">
               <Input id="contactName" value={values.contactName} onChange={(e) => set("contactName", e.target.value)} />
             </Field>
-            <Field label={LABELS.contactPosition!} htmlFor="contactPosition">
+            <Field label={LABELS.contactPosition!} number={code(1)} htmlFor="contactPosition">
               <Input id="contactPosition" placeholder="Owner, Marketing Manager…" value={values.contactPosition} onChange={(e) => set("contactPosition", e.target.value)} />
             </Field>
-            <Field label={LABELS.contactEmail!} htmlFor="contactEmail">
+            <Field label={LABELS.contactEmail!} number={code(2)} htmlFor="contactEmail">
               <Input id="contactEmail" type="email" value={values.contactEmail} onChange={(e) => set("contactEmail", e.target.value)} />
             </Field>
-            <Field label={LABELS.contactPhone!} htmlFor="contactPhone">
+            <Field label={LABELS.contactPhone!} number={code(3)} htmlFor="contactPhone">
               <Input id="contactPhone" inputMode="tel" value={values.contactPhone} onChange={(e) => set("contactPhone", e.target.value)} />
             </Field>
-            <Field label={LABELS.preferredContact!} className="sm:col-span-2">
+            <Field label={LABELS.preferredContact!} number={code(4)} className="sm:col-span-2">
               <ChipSelect
                 single
                 allowCustom={false}
@@ -520,11 +533,12 @@ export function IntakeForm({
                 onChange={(v) => set("preferredContact", v[0] ?? "")}
               />
             </Field>
-            <Field label={LABELS.registrationNumber!} htmlFor="registrationNumber" className="sm:col-span-2">
+            <Field label={LABELS.registrationNumber!} number={code(5)} htmlFor="registrationNumber" className="sm:col-span-2">
               <Input id="registrationNumber" placeholder="Optional" value={values.registrationNumber} onChange={(e) => set("registrationNumber", e.target.value)} />
             </Field>
           </div>
         )}
+
       </div>
 
       <div className="flex flex-wrap items-center gap-3">

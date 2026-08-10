@@ -6,6 +6,7 @@ export function Field({
   required,
   htmlFor,
   action,
+  number,
   children,
   className = "",
 }: {
@@ -14,6 +15,7 @@ export function Field({
   required?: boolean;
   htmlFor?: string;
   action?: ReactNode;
+  number?: string;
   children: ReactNode;
   className?: string;
 }) {
@@ -22,9 +24,14 @@ export function Field({
       <div className="mb-1.5 flex items-center justify-between gap-3">
         <label
           htmlFor={htmlFor}
-          className="text-xs uppercase tracking-wide text-muted-foreground"
+          className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground"
         >
-          {label}
+          {number && (
+            <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-[3px] bg-primary/10 px-1 text-[9px] font-semibold text-primary">
+              {number}
+            </span>
+          )}
+          <span>{label}</span>
           {required && <span className="text-destructive"> *</span>}
         </label>
         {action}
@@ -34,6 +41,7 @@ export function Field({
     </div>
   );
 }
+
 
 export function SectionHeader({ index, title, subtitle }: { index: number; title: string; subtitle: string }) {
   return (
